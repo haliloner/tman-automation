@@ -55,3 +55,4 @@ dosyasındaki `TODO` yerlerine yaz. Şifreyi kayıt sırasında yazma; `.env` ku
 - `ProcessesAndTasksPage.ts` içindeki `TODO` locator'ları remote'ta doğrula.
 - `TMAN-XXXX` yer tutucularını gerçek Jira case numaralarıyla değiştir.
 - Kayıttaki 12. satır (`#ext-element-1` tıklaması) hangi adımdı? `open()` içindeki TODO'ya yaz.
+readme test git
