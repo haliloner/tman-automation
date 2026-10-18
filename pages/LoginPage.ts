@@ -20,8 +20,11 @@ export class LoginPage {
   }
 
   // --- Metotlar (manuel case adımlarına benzer okunur) ---
-  async open(loginUrl: string) {
-    await this.page.goto(loginUrl);
+  async open(appUrl: string) {
+    // Uygulama adresini aç; sistem login sayfasına kendisi yönlendirir.
+    // (Login sayfası doğrudan açılırsa "donotaddloginpagetofavorites" hatası verir.)
+    await this.page.goto(appUrl);
+    await expect(this.username).toBeVisible({ timeout: 30_000 });
   }
 
   async login(user: string, pass: string) {
@@ -32,6 +35,8 @@ export class LoginPage {
 
   /** Giriş sonrası ana ekranın geldiğini doğrular (üst menüdeki 'Master Data' butonu). */
   async expectLoggedIn() {
-    await expect(this.page.getByRole('button', { name: 'Master Data' })).toBeVisible();
+    await expect(this.page.getByRole('button', { name: 'Master Data' })).toBeVisible({
+      timeout: 45_000,
+    });
   }
 }

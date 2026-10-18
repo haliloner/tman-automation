@@ -15,8 +15,8 @@ test.describe('Processes and Tasks', () => {
   test('TMAN-XXXX: grid yüklenir ve satır döner @smoke', async ({ page }) => {
     const processes = new ProcessesAndTasksPage(page);
 
-    // Oturum açık olduğu için ana sayfaya git (BASE_URL .env'den gelir).
-    await page.goto('/');
+    // Oturum açık olduğu için uygulamanın adresine git (BASE_URL .env'den gelir).
+    await page.goto(process.env.BASE_URL!);
 
     await processes.open();
     await processes.expectGridHasRows();
@@ -25,7 +25,7 @@ test.describe('Processes and Tasks', () => {
   test('TMAN-YYYY: Status filtresi varsayılan olarak Active gelir @smoke', async ({ page }) => {
     const processes = new ProcessesAndTasksPage(page);
 
-    await page.goto('/');
+    await page.goto(process.env.BASE_URL!);
     await processes.open();
     await processes.expectStatusFilterValue('Active');
   });

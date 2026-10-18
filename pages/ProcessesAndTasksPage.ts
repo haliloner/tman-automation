@@ -1,19 +1,19 @@
 import { Page, expect } from '@playwright/test';
 
 /**
- * Master Data > Processes and Tasks ekranı.
+ * TMAN menü yolu: soldan sağa her seviye.
+ * İlk eleman üst bardaki buton, sonuncusu açılacak ekran, aradakiler ara (üst) menüler.
+ */
+const MENU_PATH = ['Master Data', 'Process And Task Configuration', 'Processes and Tasks'];
+
+/**
+ * Master Data > Process And Task Configuration > Processes and Tasks ekranı.
  * Locator'lar codegen kaydından alındı. TODO ile işaretli yerleri remote'ta doğrula.
  */
 export class ProcessesAndTasksPage {
   constructor(private readonly page: Page) {}
 
   // --- Locator'lar ---
-  private get masterDataMenu() {
-    return this.page.getByRole('button', { name: 'Master Data' });
-  }
-  private get processesAndTasksItem() {
-    return this.page.getByRole('menuitem', { name: 'Processes and Tasks' });
-  }
   /** Ekrandaki sekme başlığı ("Process And Tasks"). TODO: Aria sekmesinde adını doğrula. */
   private get tabTitle() {
     return this.page.getByText('Process And Tasks').first();
@@ -28,11 +28,23 @@ export class ProcessesAndTasksPage {
   }
 
   // --- Metotlar ---
+  /** MENU_PATH'teki her seviyeyi sırayla açar. */
   async open() {
-    // TODO: Kayıttaki 12. satır (#ext-element-1 tıklaması) login sonrası bir adımdı.
-    // Ne olduğunu öğrenince buraya (ya da auth.setup.ts'e) rol/metin tabanlı yaz.
-    await this.masterDataMenu.click();
-    await this.processesAndTasksItem.click();
+    const [top, ...rest] = MENU_PATH;
+    const target = rest[rest.length - 1];
+    const middle = rest.slice(0, -1);
+
+    // 1) Üst bardaki buton
+    await this.page.getByRole('button', { name: top }).click();
+
+    // 2) Ara menüler: üzerine gelince alt menü açılır.
+    //    Açılmazsa hover() yerine click() dene.
+    for (const name of middle) {
+      await this.page.getByRole('menuitem', { name }).hover();
+    }
+
+    // 3) Hedef ekran
+    await this.page.getByRole('menuitem', { name: target }).click();
     await expect(this.tabTitle).toBeVisible();
   }
 
