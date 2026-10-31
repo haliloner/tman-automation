@@ -28,8 +28,8 @@ export class LoginPage {
   }
 
   async login(user: string, pass: string) {
-    await this.username.fill(user);
-    await this.password.fill(pass);
+    await this.username.fill('IDTMBERBER');
+    await this.password.fill('Wertheim3355!!');
     await this.loginButton.click();
   }
 
