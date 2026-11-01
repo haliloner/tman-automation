@@ -25,7 +25,7 @@ export default defineConfig({
 
   use: {
     baseURL: process.env.BASE_URL,
-    trace: 'retain-on-failure',
+    trace: 'on', // pass olan testlerde de trace kalsın (Trace Viewer'da görmek için)
     screenshot: 'only-on-failure',
     video: 'off',
     channel,

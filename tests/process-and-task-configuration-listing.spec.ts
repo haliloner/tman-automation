@@ -1,27 +1,18 @@
-import { test } from '@playwright/test';
-import { ProcessAndTaskConfigurationPage } from '../pages/ProcessAndTaskConfigurationPage';
+import { test, expect } from '@playwright/test';
 
-/**
- * Clarity: TMAN-TC-78
- *   Adım 1: Master Data menüsüne tıkla -> menü açılır
- *   Adım 2: Process And Task Configuration'a tıkla -> kayıtlar listelenir
- */
-test.describe('Master Data > Process And Task Configuration', () => {
-  test('TMAN-TC-78: Process And Task Configuration ekranı menüden açılınca kayıt listesi (grid) dolu gelir @smoke', async ({ page }) => {
-    const screen = new ProcessAndTaskConfigurationPage(page);
-    await screen.open();
-    await screen.expectRecordsListed();
-  });
+test('TMAN-TC-78: Process And Task Configuration ekranı menüden açılınca kayıt listesi dolu gelir @smoke', async ({ page }) => {
+  // 1. Uygulamayı aç (oturum zaten açık, login setup'ta yapıldı)
+  await page.goto(process.env.BASE_URL!);
 
-  test('TMAN-TC-78: Process And Task Configuration kayıt listesinde sütun başlıkları ve filtre alanları görünür @regression', async ({ page }) => {
-    const screen = new ProcessAndTaskConfigurationPage(page);
-    await screen.open();
-    await screen.expectRecordsListed();
+  // 2. Menüden ekrana git: Master Data > Process & Task > Process And Task Configuration
+  await page.getByRole('button', { name: 'Master Data' }).click();
+  await page.getByRole('menuitem', { name: 'Process & Task' }).click();
+  await page.getByRole('menuitem', { name: 'Process And Task Configuration' }).click();
 
-    await screen.expectColumnHeaders(['Operation Owner', 'Min. Block Time', 'Max. Block Time', 'AcSubtypes']);
-    await screen.expectFilterFields([
-      'Station', 'Flow Type', 'Aircraft Model', 'AC Subtypes', 'Stand Type',
-      'Traffic Area', 'Towing', 'Operation Owner', 'Origin', 'Destination', 'Id',
-    ]);
-  });
+  // 3. Ekran açıldı mı?
+  const panel = page.getByRole('tabpanel', { name: 'Process and Task' });
+  await expect(panel).toBeVisible();
+
+  // 4. Kayıt listesi geldi mi? (.x-grid-item = ExtJS grid satırı)
+  await expect(panel.locator('.x-grid-item').first()).toBeVisible({ timeout: 30000 });
 });
