@@ -5,9 +5,9 @@ export class ProcessAndTasksPage{
         this.page=page;
     }
     async open(){
-        await this.page.goto('https://tmandev.thy.com/gos-tman/dyn/tpl/index.html');
-        await this.page.getByRole('button',{name:'Master Data'}).click;
-        await this.page.getByRole('menuitem',{name:'Process & Task'}).click;
+        await this.page.goto('https://tmantest.thy.com/gos-tman/dyn/tpl/index.html');
+        await this.page.getByRole('button',{name:'Master Data'}).click();
+        await this.page.getByRole('menuitem',{name:'Process & Task'}).click();
         await this.page.getByText('Process And Task Configuration').click();
     }
 async expectPageOpened(){
