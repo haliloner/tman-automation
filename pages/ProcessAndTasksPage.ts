@@ -18,4 +18,13 @@ async expectDataLoaded(){
         const panel=this.page.getByRole('tabpanel',{name:'Process And Task Configuration'});
         await expect(panel.getByText('Displaying')).toBeVisible({timeout:30_000});  
     }
+
+async openCreateProcess(){
+        const createProcessButton=this.page.getByText('button', {name:'Create'});
+        await createProcessButton.click();
+        expect(this.page.getByText('text', {name:'Create '})).toBeVisible({timeout:30_000});
+
+
+
+
 }
