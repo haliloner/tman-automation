@@ -10,21 +10,18 @@ export class ProcessAndTasksPage{
         await this.page.getByRole('menuitem',{name:'Process & Task'}).click();
         await this.page.getByText('Process And Task Configuration').click();
     }
-async expectPageOpened(){
+    async expectPageOpened(){
         const panel=this.page.getByRole('tabpanel',{name:'Process And Task Configuration'});
         await expect(panel.getByText('Process And Task Configuration')).toBeVisible({timeout:30_000});
     }
-async expectDataLoaded(){
+    async expectDataLoaded(){
         const panel=this.page.getByRole('tabpanel',{name:'Process And Task Configuration'});
         await expect(panel.getByText('Displaying')).toBeVisible({timeout:30_000});  
     }
 
-async openCreateProcess(){
-        const createProcessButton=this.page.getByText('button', {name:'Create'});
-        await createProcessButton.click();
-        expect(this.page.getByText('text', {name:'Create '})).toBeVisible({timeout:30_000});
-
-
-
-
+    async openCreateProcess(){
+        const CreateProcessButton=this.page.getByRole('button', {name: 'Create'});
+        await CreateProcessButton.click();
+        await expect(this.page.getByText('Configuration Station')).toBeVisible
+}
 }
