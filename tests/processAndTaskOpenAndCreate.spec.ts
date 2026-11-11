@@ -25,8 +25,8 @@ test.describe('Process And Task Configuration ekranı', () => {
             standType: 'Remote Near',
             trafficArea: 'Domestic',
             operationOwner: 'TK',
-            originStation: 'AAA',
-            destinationStation: 'AAB',
+            originStation: 'AAC',
+            destinationStation: 'AAC',
             towing: 'Yes',
             minBlockTime: '100',
             maxBlockTime: '200',
@@ -47,6 +47,7 @@ test.describe('Process And Task Configuration ekranı', () => {
         await ekran.towing(kayit.towing);
         await ekran.fillMinBlockTime(kayit.minBlockTime);
         await ekran.fillMaxBlockTime(kayit.maxBlockTime);
+        await ekran.saveForm();
 
     });
 

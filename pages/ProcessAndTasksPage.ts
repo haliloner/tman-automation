@@ -144,4 +144,63 @@ export class ProcessAndTasksPage {
         await kutu.press('Tab');
         await expect(kutu).toHaveValue(deger);
     }
+
+    async saveForm() {
+        const pencere = this.page.locator('.x-window', { hasText: 'Configuration Station' });
+        await pencere.getByRole('button', { name: 'Create' }).click();
+        const onay = this.page.locator('.x-window', { hasText: 'Do you want to create new record?' });
+        await onay.getByRole('button', { name: 'Yes' }).click();
+        await expect(pencere).toBeHidden();
+    }
+     
+    // ================= Liste filtreleri =================
+
+    // Status filtresinden bir seçenek seç
+    async filterByStatus(durum: string) {
+        const panel = this.page.getByRole('tabpanel', { name: 'Process And Task Configuration' });
+        const kutu = panel.locator('input[id^="shared-enumCombo-"]').nth(0);
+        await kutu.click();
+        await this.page.getByRole('option', { name: durum, exact: true }).click();
+        await expect(kutu).toHaveValue(durum);
+    }
+
+    // Filter butonuna bas
+    async applyFilter() {
+        const panel = this.page.getByRole('tabpanel', { name: 'Process And Task Configuration' });
+        await panel.getByRole('button', { name: 'Filter' }).click();
+    }
+
+    // Status başlığına tıkla (sıralamayı değiştirir)
+        async sortByStatus() {
+        const panel = this.page.getByRole('tabpanel', { name: 'Process And Task Configuration' });
+        const baslik = panel.locator('.x-column-header', { hasText: 'Status' });
+        await baslik.click();
+        await expect(baslik).toHaveClass(/x-column-header-sort-(ASC|DESC)/);
+    }
+
+    // Status sütunundaki tüm satırların aynı olduğunu kontrol et
+        async expectAllStatus(durum: string) {
+        const panel = this.page.getByRole('tabpanel', { name: 'Process And Task Configuration' });
+
+        // 1) Başlıkları oku, Status kaçıncı bul
+        const basliklar = await panel.getByRole('columnheader').allTextContents();
+        let sira = -1;
+        for (let i = 0; i < basliklar.length; i++) {
+            if (basliklar[i].trim() === 'Status') {
+                sira = i;
+            }
+        }
+        expect(sira, 'Status başlığı bulunamadı, mevcut başlıklar: ' + basliklar).toBeGreaterThanOrEqual(0);
+
+        // 2) Liste gelene kadar bekle
+        await expect(panel.getByRole('gridcell').first()).toBeVisible();
+
+        // 3) Tüm hücreleri düz bir liste olarak al
+        const hucreler = await panel.getByRole('gridcell').allTextContents();
+
+        // 4) Her satırın Status hücresini kontrol et
+        for (let i = sira; i < hucreler.length; i += basliklar.length) {
+            expect(hucreler[i].trim()).toBe(durum);
+        }
+    }
 }
