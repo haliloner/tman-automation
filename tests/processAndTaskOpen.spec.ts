@@ -17,22 +17,36 @@ test.describe('Process And Task Configuration ekranı', () => {
 
 
     test(' Create penceresinde alanlar doldurulur', async () => {
+        const kayit = {
+            station: 'IST',
+            flowType: 'Turnaround',
+            aircraftModel: '320',
+            aircraftSubType: '300',
+            standType: 'Remote Near',
+            trafficArea: 'Domestic',
+            operationOwner: 'TK',
+            originStation: 'AAA',
+            destinationStation: 'AAB',
+            towing: 'Yes',
+            minBlockTime: '100',
+            maxBlockTime: '200',
+        };
+
         await ekran.openCreateProcess();
         await ekran.fillBeginDate('2026-11-10');
         await ekran.fillEndDate('2026-11-13');
-        await ekran.stationConfiguration('IST');
-        await ekran.flowType('Turnaround');
-        await ekran.selectAircraftModel('320');
-        await ekran.selectAirCraftType('300');
-        await ekran.standType('Remote Near')
-        await ekran.trafficArea('Domestic');
-        await ekran.operationOwner('TK');
-        await ekran.originStation('AAA');
-        await ekran.selectDestinationStation('AAB');
-        await ekran.towing('Yes');
-        await ekran.fillMinBlockTime('100');
-        await ekran.fillMaxBlockTime('100');
-        
+        await ekran.stationConfiguration(kayit.station);
+        await ekran.flowType(kayit.flowType);
+        await ekran.selectAircraftModel(kayit.aircraftModel);
+        await ekran.selectAirCraftType(kayit.aircraftSubType);
+        await ekran.standType(kayit.standType);
+        await ekran.trafficArea(kayit.trafficArea);
+        await ekran.operationOwner(kayit.operationOwner);
+        await ekran.originStation(kayit.originStation);
+        await ekran.selectDestinationStation(kayit.destinationStation);
+        await ekran.towing(kayit.towing);
+        await ekran.fillMinBlockTime(kayit.minBlockTime);
+        await ekran.fillMaxBlockTime(kayit.maxBlockTime);
 
     });
 
