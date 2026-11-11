@@ -153,7 +153,7 @@ export class ProcessAndTasksPage {
         await expect(pencere).toBeHidden();
     }
      
-    // ================= Liste filtreleri =================
+        // ================= Liste filtreleri =================
 
     // Status filtresinden bir seçenek seç
     async filterByStatus(durum: string) {
@@ -170,37 +170,164 @@ export class ProcessAndTasksPage {
         await panel.getByRole('button', { name: 'Filter' }).click();
     }
 
-    // Status başlığına tıkla (sıralamayı değiştirir)
-        async sortByStatus() {
-        const panel = this.page.getByRole('tabpanel', { name: 'Process And Task Configuration' });
-        const baslik = panel.locator('.x-column-header', { hasText: 'Status' });
-        await baslik.click();
-        await expect(baslik).toHaveClass(/x-column-header-sort-(ASC|DESC)/);
-    }
-
-    // Status sütunundaki tüm satırların aynı olduğunu kontrol et
         async expectAllStatus(durum: string) {
         const panel = this.page.getByRole('tabpanel', { name: 'Process And Task Configuration' });
 
-        // 1) Başlıkları oku, Status kaçıncı bul
-        const basliklar = await panel.getByRole('columnheader').allTextContents();
-        let sira = -1;
-        for (let i = 0; i < basliklar.length; i++) {
-            if (basliklar[i].trim() === 'Status') {
-                sira = i;
+        // Status başlığı ve sırası
+        const statusBaslik = panel.getByRole('columnheader', { name: 'Status', exact: true });
+        await expect(statusBaslik).toBeVisible();
+        const sira = await statusBaslik.evaluate((el) => Array.from(el.parentElement?.children || []).indexOf(el));
+        const sutunSayisi = await panel.getByRole('columnheader').count();
+
+        // Doğru olana kadar tekrar dene
+        await expect(async () => {
+            const hucreler = await panel.getByRole('gridcell').allTextContents();
+            expect(hucreler.length).toBeGreaterThan(0);
+
+            for (let i = sira; i < hucreler.length; i += sutunSayisi) {
+                expect(hucreler[i].trim()).toBe(durum);
             }
+        }).toPass({ timeout: 15_000 });
+    }
+
+    // Son sayfaya git (tek sayfa varsa hiçbir şey yapmaz)
+    async goToLastPage() {
+        const panel = this.page.getByRole('tabpanel', { name: 'Process And Task Configuration' });
+
+        // "of 58" yazısından son sayfa numarasını oku
+        const yazi = await panel.getByText(/^of \d+$/).textContent();
+        const sonSayfa = (yazi || '').replace('of', '').trim();
+
+        if (sonSayfa === '1') {
+            return;
         }
-        expect(sira, 'Status başlığı bulunamadı, mevcut başlıklar: ' + basliklar).toBeGreaterThanOrEqual(0);
 
-        // 2) Liste gelene kadar bekle
-        await expect(panel.getByRole('gridcell').first()).toBeVisible();
+        // Sayfa kutusuna yaz, Enter'a bas
+        const sayfaKutusu = panel.getByRole('spinbutton');
+        await sayfaKutusu.fill(sonSayfa);
+        await sayfaKutusu.press('Enter');
 
-        // 3) Tüm hücreleri düz bir liste olarak al
-        const hucreler = await panel.getByRole('gridcell').allTextContents();
+        // Liste yenilenene kadar bekle
+        await expect(panel.getByText('Displaying 1 -')).toBeHidden();
+    }
 
-        // 4) Her satırın Status hücresini kontrol et
-        for (let i = sira; i < hucreler.length; i += basliklar.length) {
-            expect(hucreler[i].trim()).toBe(durum);
-        }
+    // Station filtresine kod yaz
+    async filterByStation(kod: string) {
+        await this.page.getByPlaceholder('Station').fill(kod);
+    }
+
+    // Listedeki her satırda bu istasyon kodu var mı kontrol et
+    async expectAllRowsHaveStation(kod: string) {
+        const panel = this.page.getByRole('tabpanel', { name: 'Process And Task Configuration' });
+
+        // Veri satırları (başlık satırı değil)
+        const satirlar = panel.getByRole('row').filter({ has: this.page.getByRole('gridcell') });
+
+        // İçinde tam "kod" yazan hücre olan satırlar
+        const eslesenler = satirlar.filter({ has: this.page.getByRole('gridcell', { name: kod, exact: true }) });
+
+        // Kod olmayan satırlar
+        const eslesmeyenler = satirlar.filter({ hasNot: this.page.getByRole('gridcell', { name: kod, exact: true }) });
+
+        await expect(eslesenler.first()).toBeVisible();   // en az bir kayıt var
+        await expect(eslesmeyenler).toHaveCount(0);       // kodsuz satır kalmadı
+    }
+
+      // Flow Type filtresinden bir seçenek seç
+    async filterByFlowType(flow: string) {
+        const kutu = this.page.getByPlaceholder('Flow Type');
+        await kutu.click();
+        await this.page.getByRole('option', { name: flow, exact: true }).click();
+        await expect(kutu).toHaveValue(flow);
+    }
+
+    // Listedeki her satırda bu metin tam olarak yazan bir hücre var mı
+    async expectAllRowsHaveText(metin: string) {
+        const panel = this.page.getByRole('tabpanel', { name: 'Process And Task Configuration' });
+
+        const satirlar = panel.getByRole('row').filter({ has: this.page.getByRole('gridcell') });
+        const eslesenler = satirlar.filter({ has: this.page.getByRole('gridcell', { name: metin, exact: true }) });
+        const eslesmeyenler = satirlar.filter({ hasNot: this.page.getByRole('gridcell', { name: metin, exact: true }) });
+
+        await expect(eslesenler.first()).toBeVisible();
+        await expect(eslesmeyenler).toHaveCount(0);
+    }  
+    
+    // Aircraft Model filtresine değer yaz
+    async filterByAircraftModel(model: string) {
+        await this.page.getByPlaceholder('Aircraft Model').fill(model);
+    }
+
+    // Listedeki her satırda bu değer bir hücrenin içinde geçiyor mu
+    async expectAllRowsContain(metin: string) {
+        const panel = this.page.getByRole('tabpanel', { name: 'Process And Task Configuration' });
+
+        const satirlar = panel.getByRole('row').filter({ has: this.page.getByRole('gridcell') });
+        const kelime = new RegExp('\\b' + metin + '\\b');
+
+        const iceren = satirlar.filter({ has: this.page.getByRole('gridcell').filter({ hasText: kelime }) });
+        const icermeyen = satirlar.filter({ hasNot: this.page.getByRole('gridcell').filter({ hasText: kelime }) });
+
+        await expect(iceren.first()).toBeVisible();
+        await expect(icermeyen).toHaveCount(0);
+    }
+
+    // AC Subtypes filtresine değer yaz
+    async filterByAcSubtypes(altTip: string) {
+        await this.page.getByPlaceholder('AC Subtypes').fill(altTip);
+    }
+        // Stand Type filtresinden bir seçenek seç
+    async filterByStandType(stand: string) {
+        const kutu = this.page.getByPlaceholder('Stand Type');
+        await kutu.click();
+        await this.page.getByRole('option', { name: stand, exact: true }).click();
+        await expect(kutu).toHaveValue(stand);
+    }
+        // Traffic Area filtresinden bir seçenek seç
+    async filterByTrafficArea(alan: string) {
+        const kutu = this.page.getByPlaceholder('Traffic Area');
+        await kutu.click();
+        await this.page.getByRole('option', { name: alan, exact: true }).click();
+        await expect(kutu).toHaveValue(alan);
+    }
+        // Towing filtresinden bir seçenek seç
+    async filterByTowing(deger: string) {
+        const kutu = this.page.getByPlaceholder('Towing');
+        await kutu.click();
+        await this.page.getByRole('option', { name: deger, exact: true }).click();
+        await expect(kutu).toHaveValue(deger);
+    }
+
+        // Operation Owner filtresinden bir seçenek seç
+    async filterByOperationOwner(owner: string) {
+        const kutu = this.page.getByPlaceholder('Operation Owner');
+        await kutu.click();
+        const secenek = this.page.getByRole('option', { name: owner, exact: true });
+        await expect(secenek).toBeVisible();
+        await secenek.click();
+        await expect(kutu).toHaveValue(owner);
+    }
+    // Origin filtresine istasyon kodu yaz
+    async filterByOrigin(kod: string) {
+        await this.page.getByPlaceholder('Origin').fill(kod);
+    }
+        // Destination filtresine istasyon kodu yaz
+    async filterByDestination(kod: string) {
+        await this.page.getByPlaceholder('Destination').fill(kod);
+    }
+
+    // Id filtresine kayıt numarası yaz
+    async filterById(id: string) {
+        await this.page.getByPlaceholder('Id', { exact: true }).fill(id);
+    }
+    // Export butonuna basıp inen dosyayı döndür
+    async exportList() {
+        const panel = this.page.getByRole('tabpanel', { name: 'Process And Task Configuration' });
+
+        const indirmeBekle = this.page.waitForEvent('download');
+        await panel.getByText('Export', { exact: true }).click();
+        const indirme = await indirmeBekle;
+
+        return indirme;
     }
 }
